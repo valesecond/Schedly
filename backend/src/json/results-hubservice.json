@@ -1,0 +1,86 @@
+[
+    {
+        "_key": "24944173",
+        "_id": "RequisitionDetail/24944173",
+        "_rev": "_jx1Tbyq---",
+        "name": "joelho esquerdo",
+        "description": "Avaliar presença de líquido articular ou lesão de menisco na região patelar"
+    },
+    {
+        "_key": "24944174",
+        "_id": "RequisitionDetail/24944174",
+        "_rev": "_jx1Tbyq--_",
+        "name": "abdome superior",
+        "description": "Investigar fígado, vesícula biliar e rins em busca de anormalidades"
+    },
+    {
+        "_key": "24944175",
+        "_id": "RequisitionDetail/24944175",
+        "_rev": "_jx1Tbyq--A",
+        "name": "tórax posterior",
+        "description": "Examinar pulmões para identificar possíveis infiltrados ou consolidações"
+    },
+    {
+        "_key": "24944176",
+        "_id": "RequisitionDetail/24944176",
+        "_rev": "_jx1Tbyq--B",
+        "name": "coluna lombar",
+        "description": "Verificar alinhamento vertebral e presença de alterações degenerativas"
+    },
+    {
+        "_key": "24944177",
+        "_id": "RequisitionDetail/24944177",
+        "_rev": "_jx1Tbyq--C",
+        "name": "hemoglobina",
+        "description": "Determinar níveis de hemoglobina para avaliação de anemia ou poliglobulia"
+    },
+    {
+        "_key": "24944178",
+        "_id": "RequisitionDetail/24944178",
+        "_rev": "_jx1Tbyq--D",
+        "name": "glicose de jejum",
+        "description": "Medir a concentração de glicose sanguínea após jejum de no mínimo 8 horas"
+    },
+    {
+        "_key": "24944179",
+        "_id": "RequisitionDetail/24944179",
+        "_rev": "_jx1Tbyq--E",
+        "name": "colesterol total",
+        "description": "Avaliar risco cardiovascular por meio da dosagem de colesterol no sangue"
+    },
+    {
+        "_key": "24944180",
+        "_id": "RequisitionDetail/24944180",
+        "_rev": "_jx1Tbyq--F",
+        "name": "eletrocardiograma",
+        "description": "Registrar atividade elétrica cardíaca para detecção de arritmias"
+    },
+    {
+        "_key": "24944181",
+        "_id": "RequisitionDetail/24944181",
+        "_rev": "_jx1Tbyq--G",
+        "name": "ultrassom de tireoide",
+        "description": "Examinar tamanho e estrutura da glândula tireoide e detectar nódulos"
+    },
+    {
+        "_key": "24944182",
+        "_id": "RequisitionDetail/24944182",
+        "_rev": "_jx1Tbyq--H",
+        "name": "ressonância de crânio",
+        "description": "Verificar presença de lesões intracranianas, tumores ou hemorragias"
+    },
+    {
+        "_key": "24944183",
+        "_id": "RequisitionDetail/24944183",
+        "_rev": "_jx1Tbyq--I",
+        "name": "biometria hemática",
+        "description": "Analisar parâmetros de glóbulos brancos, vermelhos e plaquetas"
+    },
+    {
+        "_key": "24944184",
+        "_id": "RequisitionDetail/24944184",
+        "_rev": "_jx1Tbyq--J",
+        "name": "tomografia de abdome total",
+        "description": "Avaliar órgãos abdominais em busca de massas, colelitíase ou inflamações"
+    }
+]

@@ -1,0 +1,29 @@
+POST http://localhost:6006/attendanceUnit
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfa2V5IjoiNjI3Nzg1OSIsIl9pZCI6InVzZXIvNjI3Nzg1OSIsIl9yZXYiOiJfaFhoNTVRNi0tLSIsIm5hbWUiOiJ0YWx5c3NvbiIsImVtYWlsIjoidGFseXNzb25AZ21haWwuY29tIiwibGlzdF9yb2xlIjpbInN0cmF0ZWdpYyIsInRhdGljIiwib3BlcmF0aW9uYWwiXSwic2FsdCI6ImMzMjdjMjZhYTA4ZDQ5NWE4NzJkMWEzYjg0Yjk3OWNmIiwiaGFzaCI6IjgzZjhmMTI2OGExOGE1ZGQxYzVlM2FjOWE1NGVjNDY1YjdiYTk5NWI3ZWYyMTMzYzhlYWYzZDg5MDUzNWRmMWE1NTM5NWVhZmQ1YjczMzJiMjI1MTk3MzRlNTE1MTM2Njk4NmZkMDM5NDY4YjYwNDgzNDg2NDE0NjY0NmZjNDljIiwiaWF0IjoxNzA3NjcwODE1fQ.lIhOtkV3OoxGJgWGwYIV90rYhbL6NCptl2ab09PGit4
+
+{
+  "_key": "CLINCORDIS",
+  "name": "CLINCORDIS",
+  "cnes": "4795830",
+  "contact": "(84) 99682-0507",
+  "city": "JARDIM DO SERIDÓ",
+  "way": "AV. DR. FERNANDES",
+  "neighborhood": "CENTRO",
+  "number": "479",
+  "address": {
+    "property": {
+      "address": {
+        "city": { "_key": "2405702" },
+        "way": { "_key": null },
+        "neighborhood": { "_key": null },
+        "number": "479"
+      }
+    }
+  }
+}
+
+
+
+
+###

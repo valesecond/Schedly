@@ -1,0 +1,30 @@
+PUT http://localhost:3000/person/search
+Content-Type: application/json
+
+{
+    "id":"02111370495"
+}
+
+###
+POST http://localhost:3000/bot
+Content-Type: application/json
+
+{
+    "name":"fdssdf"
+}
+###
+GET http://localhost:3000/bot
+
+###
+
+GET http://localhost:3000/bot/start
+
+###
+
+PUT http://localhost:4000/finalitario/iptu/atualizarBoletosAtrasados
+Content-Type: application/json
+
+{
+    "property_id":"01.01.038.0024.001"
+}
+###

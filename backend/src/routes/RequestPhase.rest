@@ -1,0 +1,16 @@
+POST http://localhost:6006/requestPhase/generatePdf
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfa2V5IjoiNjI3Nzg1OSIsIl9pZCI6InVzZXIvNjI3Nzg1OSIsIl9yZXYiOiJfaFhoNTVRNi0tLSIsIm5hbWUiOiJ0YWx5c3NvbiIsImVtYWlsIjoidGFseXNzb25AZ21haWwuY29tIiwibGlzdF9yb2xlIjpbInN0cmF0ZWdpYyIsInRhdGljIiwib3BlcmF0aW9uYWwiXSwic2FsdCI6ImMzMjdjMjZhYTA4ZDQ5NWE4NzJkMWEzYjg0Yjk3OWNmIiwiaGFzaCI6IjgzZjhmMTI2OGExOGE1ZGQxYzVlM2FjOWE1NGVjNDY1YjdiYTk5NWI3ZWYyMTMzYzhlYWYzZDg5MDUzNWRmMWE1NTM5NWVhZmQ1YjczMzJiMjI1MTk3MzRlNTE1MTM2Njk4NmZkMDM5NDY4YjYwNDgzNDg2NDE0NjY0NmZjNDljIiwiaWF0IjoxNzA3NjcwODE1fQ.lIhOtkV3OoxGJgWGwYIV90rYhbL6NCptl2ab09PGit4
+Content-Type: application/json
+
+{
+  "solicitante_nome": "Fulano de Tal",
+  "solicitante_cpf": "123.456.789-00",
+  "servico_nome": "Consulta médica",
+  "tipo_servico": "Retorno",
+  "classificacao": "Prioritário",
+  "grupo_prioritario": "Idosos",
+  "observacoes": "Paciente apresenta sintomas leves.",
+  "unidade_nome": "UBS Jardim",
+  "usuario_responsavel": "Dr. João",
+  "data_hora": "21/11/2025 18:00"
+}

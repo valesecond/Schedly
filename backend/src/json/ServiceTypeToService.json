@@ -1,0 +1,153 @@
+[
+    {
+      "_from": "Service/CONSULTA",
+      "_to": "ServiceType/consulta_clinico_geral",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/CONSULTA",
+      "_to": "ServiceType/consulta_dermatologica",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/CONSULTA",
+      "_to": "ServiceType/consulta_cardiologista",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/CONSULTA",
+      "_to": "ServiceType/consulta_pediatrica",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/CONSULTA",
+      "_to": "ServiceType/consulta_ginecologista",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/CONSULTA",
+      "_to": "ServiceType/consulta_neurologista",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/EXAMES_IMAGEM",
+      "_to": "ServiceType/exame_radiografia",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/EXAMES_IMAGEM",
+      "_to": "ServiceType/exame_ultrassom",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/EXAMES_IMAGEM",
+      "_to": "ServiceType/exame_tomografia",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/EXAMES_IMAGEM",
+      "_to": "ServiceType/exame_resonancia",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/EXAMES_LABORATORIAIS",
+      "_to": "ServiceType/exame_sangue_completo",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/EXAMES_LABORATORIAIS",
+      "_to": "ServiceType/exame_quimica_sanguinea",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/EXAMES_LABORATORIAIS",
+      "_to": "ServiceType/exame_hormonal",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/EXAMES_LABORATORIAIS",
+      "_to": "ServiceType/exame_urina",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/VACINAS",
+      "_to": "ServiceType/vacina_influenza",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/VACINAS",
+      "_to": "ServiceType/vacina_hepatite",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/VACINAS",
+      "_to": "ServiceType/vacina_tetraviral",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/VACINAS",
+      "_to": "ServiceType/vacina_covid",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/CIRURGIAS",
+      "_to": "ServiceType/cirurgia_apendicectomia",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/CIRURGIAS",
+      "_to": "ServiceType/cirurgia_ortopedica",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/CIRURGIAS",
+      "_to": "ServiceType/cirurgia_cardiaca",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/CIRURGIAS",
+      "_to": "ServiceType/cirurgia_plastica",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/FISIOTERAPIA",
+      "_to": "ServiceType/fisioterapia_reabilitacao",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/FISIOTERAPIA",
+      "_to": "ServiceType/fisioterapia_esportiva",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/FISIOTERAPIA",
+      "_to": "ServiceType/fisioterapia_neurologica",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/ODONTOLOGIA",
+      "_to": "ServiceType/consulta_odontologica",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/ODONTOLOGIA",
+      "_to": "ServiceType/limpeza_dental",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/ODONTOLOGIA",
+      "_to": "ServiceType/clareamento_dental",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/ODONTOLOGIA",
+      "_to": "ServiceType/aparelho_ortodontico",
+      "relacao": "pertence"
+    },
+    {
+      "_from": "Service/ODONTOLOGIA",
+      "_to": "ServiceType/implante_dental",
+      "relacao": "pertence"
+    }
+  ]
+  

@@ -1,0 +1,39 @@
+[
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/consulta_clinico_geral", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/consulta_dermatologica", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/consulta_cardiologista", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/consulta_pediatrica", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/consulta_ginecologista", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/consulta_neurologista", "relacao": "oferece" },
+  
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/exame_radiografia", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/exame_ultrassom", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/exame_tomografia", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/exame_resonancia", "relacao": "oferece" },
+  
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/exame_sangue_completo", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/exame_quimica_sanguinea", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/exame_hormonal", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/exame_urina", "relacao": "oferece" },
+  
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/vacina_influenza", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/vacina_hepatite", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/vacina_tetraviral", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/vacina_covid", "relacao": "oferece" },
+  
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/cirurgia_apendicectomia", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/cirurgia_ortopedica", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/cirurgia_cardiaca", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/cirurgia_plastica", "relacao": "oferece" },
+  
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/fisioterapia_reabilitacao", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/fisioterapia_esportiva", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/fisioterapia_neurologica", "relacao": "oferece" },
+  
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/consulta_odontologica", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/limpeza_dental", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/clareamento_dental", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/aparelho_ortodontico", "relacao": "oferece" },
+    { "_from": "AttendanceUnit/NASF-UBS", "_to": "ServiceType/implante_dental", "relacao": "oferece" }
+  ]
+  

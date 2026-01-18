@@ -1,0 +1,40 @@
+POST http://localhost:6006/user 
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfa2V5IjoiNjI3Nzg1OSIsIl9pZCI6InVzZXIvNjI3Nzg1OSIsIl9yZXYiOiJfaFhoNTVRNi0tLSIsIm5hbWUiOiJ0YWx5c3NvbiIsImVtYWlsIjoidGFseXNzb25AZ21haWwuY29tIiwibGlzdF9yb2xlIjpbInN0cmF0ZWdpYyIsInRhdGljIiwib3BlcmF0aW9uYWwiXSwic2FsdCI6ImMzMjdjMjZhYTA4ZDQ5NWE4NzJkMWEzYjg0Yjk3OWNmIiwiaGFzaCI6IjgzZjhmMTI2OGExOGE1ZGQxYzVlM2FjOWE1NGVjNDY1YjdiYTk5NWI3ZWYyMTMzYzhlYWYzZDg5MDUzNWRmMWE1NTM5NWVhZmQ1YjczMzJiMjI1MTk3MzRlNTE1MTM2Njk4NmZkMDM5NDY4YjYwNDgzNDg2NDE0NjY0NmZjNDljIiwiaWF0IjoxNzA3NjcwODE1fQ.lIhOtkV3OoxGJgWGwYIV90rYhbL6NCptl2ab09PGit4
+
+{
+    "email": "segundo@example.com",
+    "password": "123456",
+    "attendanceUnit": [
+      {
+        "_key": "MAIN",
+        "name": "SECRETARIA DE SAÚDE",
+        "address": "",
+        "list_role": ["receptionist","scheduler","attendant","schedulerManager","manager"]
+      }
+    ],
+    "person": { "name": "FRANCISCO FERNANDES DO VALE SEGUNDO", "id": "12285180411" }
+}
+
+###
+PUT http://localhost:6006/user/login 
+Content-Type: application/json
+
+{
+  "user_name": "segundo",
+  "password": "123456"
+}
+
+
+###
+PUT http://localhost:3001/user/create2FA 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfa2V5IjoiNjI3MzUzMSIsIl9pZCI6InVzZXIvNjI3MzUzMSIsIl9yZXYiOiJfaFhmZHV2Sy0tLSIsIm5hbWUiOiJhb2xpdmVpcmFmIiwibGlzdF9yb2xlIjpbInN0cmF0ZWdpYyIsInRhdGljIiwib3BlcmF0aW9uYWwiXSwic2FsdCI6ImI3NDhjMjc0MzI0MWNkMmNkMjJiYWYwNDk2ZDM1MWE3IiwiaGFzaCI6ImE1MjFjYWYyYTc3NzdjN2JkYTAyN2I5YThhNjZmMmUwMDEzZmNlMTNmZDQ4YjUxZDg1ODhiNTc2NWQ3NDRkZTJiZWUyZDcwYzkzZmUxODQ1NTQ2ZjFjMmM2ZDhlZTM5OWMwOTQ4YTQ4YmY3MmFhYTgwMTNmODI5ZWYyMjMyNzIzIiwiaWF0IjoxNzA3NjczNDU2fQ.nVytbEufJBvPv2zxBsYo3-Q9l6vwWW7GJKlUCmjDPAs
+
+PUT http://localhost:3001/user/attribute2FA
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfa2V5IjoiNjI3MzUzMSIsIl9pZCI6InVzZXIvNjI3MzUzMSIsIl9yZXYiOiJfaFhmZHV2Sy0tLSIsIm5hbWUiOiJhb2xpdmVpcmFmIiwibGlzdF9yb2xlIjpbInN0cmF0ZWdpYyIsInRhdGljIiwib3BlcmF0aW9uYWwiXSwic2FsdCI6ImI3NDhjMjc0MzI0MWNkMmNkMjJiYWYwNDk2ZDM1MWE3IiwiaGFzaCI6ImE1MjFjYWYyYTc3NzdjN2JkYTAyN2I5YThhNjZmMmUwMDEzZmNlMTNmZDQ4YjUxZDg1ODhiNTc2NWQ3NDRkZTJiZWUyZDcwYzkzZmUxODQ1NTQ2ZjFjMmM2ZDhlZTM5OWMwOTQ4YTQ4YmY3MmFhYTgwMTNmODI5ZWYyMjMyNzIzIiwiaWF0IjoxNzA3NjczNDU2fQ.nVytbEufJBvPv2zxBsYo3-Q9l6vwWW7GJKlUCmjDPAs
+Content-Type: application/json
+
+{
+    "secret":"tHIR7VXbQ,Jzw5s?QU#{z3Ah10@4a{sO",
+    
+}
