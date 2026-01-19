@@ -25,6 +25,7 @@ import ListUnauthorized from "./views/ListUnauthorized.js";
 import ReservedPlaces from "./views/ReservedPlaces.js";
 import AboutSystem from "./views/AboutSystem.js";
 import Proof from "./views/Proof.js";
+import DashboardTransportManager from "./views/DashboardTransportManager.js";
 
 const pathToRegex = (path) =>
   new RegExp(
@@ -86,6 +87,7 @@ const router = async () => {
     { path: "/dashboard/scheduler", view: DashboardScheduler },
     { path: "/dashboard/schedulerManager", view: DashboardSchedulerManager },
     { path: "/dashboard/attendant", view: DashboardAttendant },
+    { path: "/dashboard/transportManager", view: DashboardTransportManager },
 
     { path: "/report", view: ReportChoice },
     { path: "/report/annualRequest/:year", view: AnnualRequest },

@@ -9,6 +9,7 @@ export default class {
     this.list_role["scheduler"] = "Agendamento";
     this.list_role["schedulerManager"] = "Gestão de Agendas";
     this.list_role["attendant"] = "Atendimento";
+    this.list_role["transportManager"] = "Gestão de Transporte";
     this.list_role["manager"] = "Gestão";
   }
 
