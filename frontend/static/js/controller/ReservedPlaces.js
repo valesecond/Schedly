@@ -28,7 +28,7 @@ async function enviarParaFila(listaIds) {
 
     listaIds.forEach((item) => {
       const card = document.querySelector(
-        `.paciente-card[data-key="${item.id}"]`
+        `.paciente-card[data-key="${item.id}"]`,
       );
       if (card && card.parentNode) {
         const col = card.parentNode; // o div.paciente-col
@@ -116,7 +116,7 @@ function criarBotoesEnviar() {
       (card) => ({
         id: card.dataset.key,
         name: card.dataset.name,
-      })
+      }),
     );
     if (todos.length === 0) {
       alert("Nenhum paciente para enviar.");
@@ -131,7 +131,7 @@ function criarBotoesEnviar() {
   // Atualiza estado do botão "Selecionados"
   function updateSelecionadosState() {
     const anySelected = document.querySelectorAll(
-      ".paciente-card.selected"
+      ".paciente-card.selected",
     ).length;
     btnSelecionados.disabled = !anySelected;
   }
@@ -141,7 +141,8 @@ function criarBotoesEnviar() {
 
     if (docsBtn) {
       ev.stopPropagation();
-      abrirDocumentosPessoa(docsBtn.dataset.person_key);
+      const cardEl = docsBtn.closest(".paciente-card");
+      abrirDocumentosPessoa(docsBtn.dataset.person_key, cardEl);
       return;
     }
 
@@ -169,44 +170,96 @@ function criarBotoesEnviar() {
   console.log("btnFunction container:", container);
 }
 
-async function abrirDocumentosPessoa(person_key) {
-  console.log(person_key);
+function fmtBirthBR(birthdate) {
+  if (!birthdate) return "—";
+  try {
+    const d = new Date(String(birthdate) + "T00:00:00");
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString("pt-BR");
+  } catch {
+    return "—";
+  }
+}
 
+function safeText(v) {
+  const s = (v ?? "").toString().trim();
+  return s ? s : "—";
+}
+
+async function abrirDocumentosPessoa(person_key, cardEl) {
   const container = document.getElementById("documentosPessoaContainer");
-  container.innerHTML = `<div class="loading">Carregando documentos...</div>`;
+  if (!container) return;
+
+  // ✅ dados principais vindos do InProcess (guardados no dataset do card)
+  const name = cardEl?.dataset?.name || "";
+  const phone = cardEl?.dataset?.phone || "";
+  const email = cardEl?.dataset?.email || "";
+  const birthdate = cardEl?.dataset?.birthdate || "";
+  const gender = cardEl?.dataset?.gender || "";
+  const mother = cardEl?.dataset?.mother || "";
+  const job = cardEl?.dataset?.job || "";
+  const disability = cardEl?.dataset?.disability || "";
+
+  const resumoHtml = `
+    <div class="docs-card mb-2">
+      <h3 class="docs-title">${name ? `Pessoa: ${name}` : "Pessoa"}</h3>
+
+      <div class="small text-muted" style="line-height:1.35;">
+        <div><b>Telefone:</b> ${safeText(phone)}</div>
+        <div><b>Email:</b> ${safeText(email)}</div>
+        <div><b>Nascimento:</b> ${fmtBirthBR(birthdate)}</div>
+        <div><b>Sexo:</b> ${safeText(gender)}</div>
+        <div><b>Mãe:</b> ${safeText(mother)}</div>
+        <div><b>Profissão:</b> ${safeText(job)}</div>
+        <div><b>Deficiência:</b> ${safeText(disability)}</div>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML =
+    resumoHtml + `<div class="loading">Carregando documentos...</div>`;
 
   try {
     const dados = await fetchData("/person/docs", "PUT", { person_key });
-    console.log("dados", dados);
 
-    if (!dados || !dados.l_docs || dados.l_docs.length === 0) {
-      container.innerHTML = `
+    const docs = Array.isArray(dados?.l_docs) ? dados.l_docs : [];
+
+    if (!docs.length) {
+      container.innerHTML =
+        resumoHtml +
+        `
         <div class="docs-card">
-          <h3 class="docs-title">Documentos da Pessoa</h3>
+          <h3 class="docs-title">Documentos</h3>
           <p class="docs-empty">Nenhum documento anexado.</p>
-        </div>`;
+        </div>
+      `;
       return;
     }
 
-    let html = `
+    let html =
+      resumoHtml +
+      `
       <div class="docs-card">
-        <h3 class="docs-title">Documentos de ${dados.name}</h3>
+        <h3 class="docs-title">Documentos</h3>
         <div class="docs-grid">
     `;
 
-    dados.l_docs.forEach((doc) => {
+    docs.forEach((doc) => {
       html += `
         <button class="doc-item" onclick="abrirArquivo('${doc.url}')">
           <div class="doc-icon">📄</div>
           <div class="doc-name">${doc.filename}</div>
-        </button>`;
+        </button>
+      `;
     });
 
     html += `</div></div>`;
     container.innerHTML = html;
   } catch (err) {
     console.error(err);
-    container.innerHTML = `<div class="docs-card error">Erro ao carregar documentos.</div>`;
+    container.innerHTML =
+      resumoHtml +
+      `<div class="docs-card error">Erro ao carregar documentos.</div>`;
   }
 }
 
@@ -274,24 +327,49 @@ async function loadReservedFromSession() {
   } else {
     gridPac.innerHTML = "";
     inProcessDocs.forEach((doc) => {
+      const p = doc.person || {};
+
+      const personKey = p._key || "";
+      const phone = p.contact?.phone || "";
+      const email = p.contact?.email || "";
+      const birthdate = p.birthdate || "";
+      const gender = p.gender || "";
+      const motherName = p.motherName || "";
+      const job = p.job?.name || "";
+      const disability = p.disability?.name || "";
+
       const col = document.createElement("div");
       col.className = "paciente-col";
+
       const card = document.createElement("div");
       card.className = "paciente-card";
-      card.dataset.key = doc.person?._key || "";
-      card.dataset.name = doc.person?.name || "";
 
+      // ✅ mantém o que você já usa
+      card.dataset.key = personKey || "";
+      card.dataset.name = p.name || "";
+
+      // ✅ dados principais extras (pra mostrar no resumo)
+      card.dataset.phone = phone;
+      card.dataset.email = email;
+      card.dataset.birthdate = birthdate;
+      card.dataset.gender = gender;
+      card.dataset.mother = motherName;
+      card.dataset.job = job;
+      card.dataset.disability = disability;
+
+      // ✅ UI: mostra dados principais no card
       card.innerHTML = `
-  <div class="avatar"><i class="bi bi-person-fill"></i></div>
+        <div class="avatar"><i class="bi bi-person-fill"></i></div>
 
-  <div class="title abrir-docs"
-       data-person_key="${doc.person?._key}">
-       ${doc.person?.name || "—"}
-  </div>
-`;
-
-      // ** NÃO adicionamos listener em cada card aqui **
-      // selection será tratada por delegation dentro de criarBotoesEnviar()
+        <div class="title abrir-docs" data-person_key="${personKey}">
+          ${p.name || "—"}
+          <div class="text-muted" style="font-size:.8rem;">
+            ${safeText(gender)} • ${fmtBirthBR(birthdate)}${
+              phone ? " • " + phone : ""
+            }
+          </div>
+        </div>
+      `;
 
       col.appendChild(card);
       gridPac.appendChild(col);
@@ -415,7 +493,7 @@ async function loadReservedFromSession() {
 
     btn.innerHTML = `
       <div class="date">${new Date(fullDate + "T00:00").toLocaleDateString(
-        "pt-BR"
+        "pt-BR",
       )} <small>(${period.toLowerCase()})</small></div>
       <div class="meta"><span class='badge bg-success'>${left}</span> vagas</div>
     `;
@@ -438,7 +516,7 @@ async function loadReservedFromSession() {
             date: fullDate,
             serviceType:
               selected.serviceType || selected.service?.serviceType || null,
-          }
+          },
         );
         const list =
           (scheduledResp && Array.isArray(scheduledResp.data)
@@ -511,9 +589,11 @@ async function carregarReservados() {
     console.log("RESPONSE:", response);
 
     const grid = document.getElementById("gridAgendados");
+    if (!grid) return;
+
     grid.innerHTML = "";
 
-    if (response.length === 0) {
+    if (!response || response.length === 0) {
       grid.innerHTML = `<div class="muted">Nenhum reservado encontrado</div>`;
       return;
     }
@@ -521,8 +601,8 @@ async function carregarReservados() {
     response.forEach((r) => {
       grid.innerHTML += `
         <div class="agendado-card">
-          <div class="avatar">${r.person.name[0]}</div>
-          <div class="name">${r.person.name}</div>
+          <div class="avatar">${(r.person?.name || " ")[0] || "?"}</div>
+          <div class="name">${r.person?.name || "—"}</div>
         </div>
       `;
     });

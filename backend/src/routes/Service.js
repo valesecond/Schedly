@@ -12,7 +12,7 @@ router.post("/", async (req, res) => {
 
   result = await db.base.query(
     `for p in ${collName} filter p._key == @_key return p`,
-    { _key }
+    { _key },
   );
 
   result = await result.next();
@@ -204,7 +204,7 @@ router.put("/promise", async (req, res) => {
       pendingItems.map((p) => ({
         conduct: p.requestPhase.conduct,
         priorityGroup: p.requestPhase.priorityGroup,
-      }))
+      })),
     );
 
     // 0) Buscar todos os Reserved relevantes
@@ -241,11 +241,118 @@ router.put("/promise", async (req, res) => {
   }
 });
 
+router.put("/promise/by-unit", async (req, res) => {
+  const { unit, userProperty } = req.body;
+
+  if (!unit?._key) {
+    return res.status(400).json({ error: "É necessário informar unit._key" });
+  }
+  if (!userProperty) {
+    return res
+      .status(400)
+      .json({ error: "Usuário (userProperty) não fornecido." });
+  }
+
+  try {
+    const unitKey = unit._key;
+
+    // 1) PromiseServices da unidade (sem filtrar por service/type/especialista)
+    const promiseCursor = await db.base.query({
+      query: `
+        FOR p IN PromiseService
+          FILTER p.attendanceUnit._key == @unitKey
+          RETURN p
+      `,
+      bindVars: { unitKey },
+    });
+    const promiseServices = await promiseCursor.all();
+
+    // 2) Pessoas agendadas na unidade -> COM serviço e dia (via schedulingPhase)
+    const scheduledCursor = await db.base.query({
+      query: `
+    FOR psi IN PromiseServiceItem
+      FILTER psi.attendanceUnit._key == @unitKey
+        AND psi.status == "PENDENTE"
+        AND HAS(psi, "person")
+        AND psi.person != null
+        AND psi.person._key != null
+
+      COLLECT personKey = psi.person._key INTO rows
+
+      LET first = FIRST(rows[*].psi)
+      FILTER first != null
+
+      // ✅ tenta achar o InProcess REAL dessa pessoa nessa unidade
+     LET inProcess = FIRST(
+  FOR ip IN InProcess
+    FILTER ip.person != null
+      AND ip.person._key == personKey
+
+      // ✅ NÃO pode ter transportPhase na raiz
+      AND (NOT HAS(ip, "transportPhase") OR ip.transportPhase == null)
+
+      // ✅ unidade vem de schedulingPhase
+      AND LENGTH(
+        FOR sp IN (ip.schedulingPhase || [])
+          FILTER sp.attendanceUnit != null
+            AND sp.attendanceUnit._key == @unitKey
+          LIMIT 1
+          RETURN 1
+      ) > 0
+
+    SORT ip.requestPhase.timestamp.datetime DESC
+    LIMIT 1
+    RETURN { _key: ip._key, _id: ip._id }
+)
+
+FILTER inProcess != null
+      LET schedulingPhase = (
+        FOR r IN rows
+          LET s = r.psi
+          SORT s.start.date ASC
+          RETURN {
+            _key: s._key,
+            promiseService: s.promiseService,
+            person: s.person,
+            attendanceUnit: s.attendanceUnit,
+            serviceType: s.serviceType,
+            specialist: s.specialist,
+            start: s.start,
+            status: s.status,
+            timestamp: s.timestamp
+          }
+      )
+
+      RETURN {
+        inProcessKey: inProcess ? inProcess._key : null,
+        inProcessId: inProcess ? inProcess._id : null,
+
+        person: first.person,
+        requestPhase: { conduct: "elective", priorityGroup: [] },
+        isReserved: false,
+        schedulingPhase
+      } `,
+      bindVars: { unitKey },
+    });
+    const inProcessDocs = await scheduledCursor.all();
+
+    console.log("✅ InProcessDocs:", inProcessDocs);
+
+    return res.json({
+      promiseServices,
+      inProcessDocs,
+    });
+  } catch (err) {
+    console.error("❌ Erro by-unit:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // 1) Novo contador em CounterScheduling: status + especialidade
 async function incrementSchedulingCounter(
   timestamp,
   statuses = [],
-  specialties = []
+  specialties = [],
 ) {
   const year = String(timestamp.year);
   const month = String(timestamp.month).padStart(2, "0");
@@ -382,7 +489,7 @@ async function incrementSchedulingCounter(
       day,
       globalStatusMap,
       specStatusMap,
-    }
+    },
   );
 }
 
@@ -420,7 +527,7 @@ router.put("/promise/items", async (req, res) => {
       };
       const insertCursor = await db.base.query(
         `INSERT @doc INTO PromiseServiceItem RETURN NEW`,
-        { doc: itemDoc }
+        { doc: itemDoc },
       );
       const savedItem = await insertCursor.next();
 
@@ -469,7 +576,7 @@ router.put("/promise/items", async (req, res) => {
           period: start.period || "",
           serviceTypeKey: serviceType._key,
           newPhase: phaseEntry,
-        }
+        },
       );
     }
 
@@ -491,14 +598,14 @@ router.put("/promise/items", async (req, res) => {
         psKey: promiseService._key,
         date: start.date,
         count: persons.length,
-      }
+      },
     );
 
     // 3) Contabiliza status e especialidade juntos em CounterScheduling
     const statuses = persons.map(() => status);
     const specialties = persons.map(() => serviceType.nome);
     await incrementSchedulingCounter(timestamp, statuses, specialties).catch(
-      (err) => console.error("Erro em CounterScheduling:", err)
+      (err) => console.error("Erro em CounterScheduling:", err),
     );
 
     return res.json({ success: true, scheduledCount: persons.length });
@@ -512,7 +619,7 @@ async function updateSchedulingStatus(
   timestamp,
   specialty,
   fromStatus,
-  toStatus
+  toStatus,
 ) {
   const year = String(timestamp.year);
   const month = String(timestamp.month).padStart(2, "0");
@@ -612,7 +719,7 @@ async function updateSchedulingStatus(
       from: fromStatus,
       to: toStatus,
       spec: specialty,
-    }
+    },
   );
 }
 
@@ -626,7 +733,7 @@ router.put("/promise/item/delete", async (req, res) => {
       `FOR ip IN InProcess
          FILTER ip.person._key == @personKey
          RETURN ip`,
-      { personKey: person._key }
+      { personKey: person._key },
     );
     const ipDoc = await getCursor.next();
     if (!ipDoc) {
@@ -641,7 +748,7 @@ router.put("/promise/item/delete", async (req, res) => {
          FILTER psi.promiseService._key == @svcKey
            AND psi.person._key == @personKey
          REMOVE psi IN PromiseServiceItem`,
-      { svcKey: promiseService._key, personKey: person._key }
+      { svcKey: promiseService._key, personKey: person._key },
     );
 
     // 3) Atualiza schedulingPhase → DESMARCADO
@@ -661,13 +768,13 @@ router.put("/promise/item/delete", async (req, res) => {
         psKey: promiseService._key,
         user: userProperty,
         timestamp,
-      }
+      },
     );
     const updatedDoc = await updateCursor.next();
 
     // 4) Reabre vaga em PromiseService
     const dateToAdjust = updatedDoc.schedulingPhase.find(
-      (p) => p.promiseService._key === promiseService._key
+      (p) => p.promiseService._key === promiseService._key,
     )?.start?.date;
     if (dateToAdjust) {
       await db.base.query(
@@ -681,13 +788,13 @@ router.put("/promise/item/delete", async (req, res) => {
                RETURN MERGE(d, { vacancyLimit: newVal })
            )
            UPDATE ps WITH { scheduledDays: adjusted } IN PromiseService`,
-        { psKey: promiseService._key, date: dateToAdjust }
+        { psKey: promiseService._key, date: dateToAdjust },
       );
     }
 
     // 5) Ajusta contadores em CounterScheduling
     const firstPhase = updatedDoc.schedulingPhase.find(
-      (p) => p.promiseService._key === promiseService._key
+      (p) => p.promiseService._key === promiseService._key,
     );
     const specialtyKey = firstPhase ? firstPhase.serviceType.nome : null;
     if (specialtyKey) {
@@ -695,7 +802,7 @@ router.put("/promise/item/delete", async (req, res) => {
         timestamp,
         specialtyKey,
         "PENDENTE",
-        "DESMARCADO"
+        "DESMARCADO",
       );
     } else {
       // Só global se não houver specialty
@@ -704,7 +811,7 @@ router.put("/promise/item/delete", async (req, res) => {
 
     // 6) Se todos desmarcados, finaliza InProcess → FinishedProcess
     const descheduledCount = updatedDoc.schedulingPhase.filter(
-      (p) => p.status === "DESMARCADO"
+      (p) => p.status === "DESMARCADO",
     ).length;
     const medicalCount = (ipDoc.requestPhase?.medicalRequest || []).length;
 
@@ -714,7 +821,7 @@ router.put("/promise/item/delete", async (req, res) => {
            FILTER ip._key == @key
            REMOVE ip IN InProcess
            RETURN OLD`,
-        { key: updatedDoc._key }
+        { key: updatedDoc._key },
       );
       const oldDoc = await rmCursor.next();
       const finishedDoc = {
@@ -759,7 +866,7 @@ router.put("/promise/item/return", async (req, res) => {
         {
           svcKey: promiseService._key,
           personKey: person._key,
-        }
+        },
       )
       .then((c) => c.all());
 
@@ -797,7 +904,7 @@ router.put("/promise/item/return", async (req, res) => {
       {
         psKey: promiseService._key,
         date,
-      }
+      },
     );
 
     return res.status(200).json({ success: true });
@@ -837,7 +944,7 @@ router.put("/scheduled/search", async (req, res) => {
         psKey: promiseService._key,
         date,
         stKey: serviceType._key,
-      }
+      },
     );
     const items = await cursor.all();
 

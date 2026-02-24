@@ -32,7 +32,7 @@ router.get("/", async (req, res) => {
           FILTER p._key == @key 
           RETURN p
       `,
-      { key: propertyKey }
+      { key: propertyKey },
     );
     let propertyDoc = await propertyCursor.next();
 
@@ -54,7 +54,7 @@ router.get("/", async (req, res) => {
           FILTER c._key == @key 
           RETURN { key: c._key, name: c.name, state: c.state }
       `,
-      { key: cityKey }
+      { key: cityKey },
     );
     let cityDoc = await cityCursor.next();
 
@@ -131,6 +131,7 @@ router.get("/search", async (req, res) => {
         RETURN {
           _key: unit._key,
           name: unit.name,
+          city: unit.city,
           services: grouped
         }
     `;
@@ -183,7 +184,7 @@ router.post("/", async (req, res) => {
           way: address.way,
           neighborhood: address.neighborhood,
           number: address.number,
-        }
+        },
       );
 
       const existingProperty = await propertyCursor.next();

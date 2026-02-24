@@ -4,6 +4,26 @@ const { generateSignedUrl } = require("../config/Storage");
 
 const collName = "Person";
 
+router.get("/:_key", async (req, res) => {
+  const { _key } = req.params;
+
+  let inProcess = await db.base.query(
+    `for u in InProcess filter u._key == @_key return u`,
+    { _key },
+  );
+  inProcess = await inProcess.next();
+
+  let person = await db.base.query(
+    `for p in Person filter p._key == @person_key return p`,
+    { person_key: inProcess.person._key },
+  );
+  person = await person.next();
+
+  inProcess.person = person;
+
+  res.send(inProcess);
+});
+
 router.put("/docs", async (req, res) => {
   try {
     const { person_key } = req.body;

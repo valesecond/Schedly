@@ -11,27 +11,26 @@ export default class extends AbstractView {
   }
 
   async getMenu() {
-    let row = ``;
-    row += `
-                <ul class="nav nav-tabs justify-content-center">                
-                <li class="nav-item">
-                        <a class="nav-link" href="/dashboard/scheduler">Início</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dataScheduling">Demandas</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="#">Agendamento Interno</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/authorizationPhase/list">Aguardando Autorização</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/unauthorizedPhase/list">Não Comparecidos</a>
-                    </li>
-                    `;
-    row += `</ul>`;
-
+    let row = `
+      <ul class="nav nav-tabs justify-content-center flex-wrap text-center">
+        <li class="nav-item">
+          <a class="nav-link" href="/dashboard/transportManager">Início</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="#">Criar Viagens</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/transportPhase/travelPending/list">Viagens Pendentes</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"  href="/transportPhase/travelMade/list">Viagens Concluídas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"  href="/transportPhase/travelHistory/list">Histórico de Viagens</a>
+        </li>
+        ${super.getMenu()}
+      </ul>
+    `;
     return row;
   }
 
@@ -53,7 +52,6 @@ export default class extends AbstractView {
 
       .container {
         width: 100%;
-        margin: 1rem auto;
       }
 
       /* Título com ícone */
@@ -473,27 +471,21 @@ details.type-block > summary span {
       <div class="tree" id="unitsContainer"></div>
     </div>
 
-<div id="schedulingContainer" class="container" style="display: none;">
-  <div class="row gy-4">
+<div id="schedulingContainer" class="container-fluid px-2 px-lg-3" style="display:none;">
+  <div class="row g-3">
     <!-- Coluna de Pacientes -->
-    <div class="col-lg-4">
+    <div class="col-12 col-lg-4">
       <div class="card shadow-sm h-100">
         <div class="card-header bg-primary text-white d-flex align-items-center">
           <i class="bi bi-people-fill me-2"></i>
-          <h5 class="mb-0">Aguardando Agendamento</h5>
+          <h5 class="mb-0">Aguardando Transporte</h5>
         </div>
         <div class="card-body d-flex flex-column">
           <div class="input-group mb-3">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
             <input id="searchPaciente" type="text" class="form-control" placeholder="Buscar paciente…">
           </div>
-          <button
-              class="btn btn-primary mb-2"
-              onclick="generatePDFPatient()"
-            >
-              <i class="bi bi-file-earmark-pdf-fill me-2"></i>
-              Gerar PDF do Dia 
-            </button>
+          
           <div id="gridPacientes"
                class="row g-3 flex-grow-1"
                style="max-height:450px; overflow-y:auto;">
@@ -503,63 +495,42 @@ details.type-block > summary span {
       </div>
     </div>
 
-    <div class="col-lg-4">
-      <div class="card shadow-sm h-100">
-        <div class="card-header bg-success text-white">
-          <h5 class="mb-0"><i class="bi bi-calendar-event-fill me-2"></i>Dias Disponíveis</h5>
-        </div>
-        <div class="card-body overflow-auto d-flex flex-column">
-          <div id="listaDias" class="row row-cols-2 g-3 flex-grow-1">
-            <!-- Botões de dias injetados aqui -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div id="colAgendados" class="col-lg-4" style="display: none;">
+    
+    <div id="colAgendados" class="col-12 col-lg-8" style="display: none;">
       <div class="card shadow-sm h-100">
         <div class="card-header bg-primary text-white">
           <h5 class="mb-0">
-            <i class="bi bi-journal-check me-2"></i>Agendados
+            <i class="bi bi-journal-check me-2"></i>Viagem
           </h5>
         </div>
         <div class="card-body overflow-auto d-flex flex-column">
-          <!-- Linha com data ativa e botão PDF lado a lado -->
-          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <h6 class="text-secondary mb-0">
-              Para <span id="activeDateLabel">–</span>
-            </h6>
-            <button
-              class="btn btn-success"
-              onclick="generateDayPDF()"
-            >
-              <i class="bi bi-file-earmark-pdf-fill me-2"></i>
-              Gerar PDF do Dia 
-            </button>
-          </div>
-
           <div id="gridAgendados" class="row g-3 flex-grow-1">
             <!-- Cards de agendados serão injetados aqui -->
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Botão Salvar em card, sem mudar nenhum ID ou classe importante -->
-    <div id="saveReceptionWrapper" class="col-12">
-      <div class="card shadow-sm rounded-4 rounded-top-0 border-0">
-        <div class="card-footer d-flex gap-2">
-        <button class="btn btn-primary flex-fill" onclick="generatePDFGeneral()">
-          <i class="bi bi-file-earmark-pdf-fill me-2"></i>
-          Gerar PDF do Serviço (Geral)
-        </button>
-
-        <button class="btn btn-success flex-fill" onclick="generateServicePDF()">
-          <i class="bi bi-file-earmark-pdf-fill me-2"></i>
-          Gerar PDF de Agendamentos Totais
-        </button>
+    <!-- ✅ LISTA DE VIAGENS (ABAIXO DOS DOIS CARDS) -->
+<div class="row mt-3">
+  <div class="col-12">
+    <div class="card shadow-sm">
+      <div class="card-header bg-light d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-list-check text-primary"></i>
+          <strong>Viagens criadas</strong>
+        </div>
+        <small class="text-muted" id="tripsCount">0</small>
       </div>
+
+      <div class="card-body">
+        <div id="tripsList" class="row g-2">
+          <!-- cards de viagens entram aqui -->
+        </div>
       </div>
+    </div>
+  </div>
+</div>
+
     </div>
   </div><!-- fecha .row.gy-4 -->
 </div><!-- fecha #schedulingContainer -->
@@ -568,7 +539,7 @@ details.type-block > summary span {
  
       </div>
     </div>
-    <img style="display:none" onload="showViewScheduling()" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==">
+    <img style="display:none" onload="openSchedulingScreen()" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==">
   `;
   }
 }

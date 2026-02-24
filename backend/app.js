@@ -29,6 +29,7 @@ const Reserved = require("./src/routes/Reserved");
 const PromiseService = require("./src/routes/PromiseService");
 const Media = require("./src/routes/Media");
 const Proof = require("./src/routes/Proof");
+const TransportPhase = require("./src/routes/TransportPhase");
 
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
@@ -42,7 +43,7 @@ app.use((req, res, next) => {
   let now = new Date();
 
   const dtl = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" })
+    now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" }),
   );
 
   let month = dtl.getMonth() + 1;
@@ -102,9 +103,9 @@ app.use("/reserved", Reserved);
 app.use("/promiseService", PromiseService);
 app.use("/media", Media);
 app.use("/proof", Proof);
+app.use("/transportPhase", TransportPhase);
 
 const port = process.env.SERVER_PORT || 6006;
-// Inicia o servidor Express.js
 app.listen(port, () => {
   console.log(`Schedule backend rodando na porta ${port}`);
 });

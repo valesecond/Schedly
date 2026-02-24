@@ -1,10 +1,12 @@
 async function showViewScheduling() {
   await loadUnitsTree();
   attachTreeHandlers();
-  setupDetailAnimations();
 }
 
 let selectedServiceInfo = null;
+
+let allUnits = [];
+let currentUnits = []; // o que está renderizado no momento
 
 async function loadUnitsTree() {
   const container = document.getElementById("unitsContainer");
@@ -14,231 +16,306 @@ async function loadUnitsTree() {
   }
 
   try {
-    const units = await fetchData("/attendanceUnit/search", "GET");
-    container.innerHTML = "";
+    allUnits = await fetchData("/attendanceUnit/search", "GET");
+    currentUnits = [...allUnits];
 
-    units.forEach((unit) => {
-      const unitDetails = document.createElement("details");
-      unitDetails.classList.add("unit-block");
+    setupUnitsFilterUI(allUnits);
 
-      const unitSummary = document.createElement("summary");
-      unitSummary.innerHTML = `
-        <span>${unit.name}</span>
-        <i class="bi bi-chevron-down"></i>
-      `;
-      unitDetails.appendChild(unitSummary);
+    renderUnitsTree(currentUnits);
+  } catch (err) {
+    console.error("Erro ao carregar unidades em árvore:", err);
+    alert("Não foi possível carregar a árvore de unidades.");
+  }
+}
 
-      const servicesContainer = document.createElement("ul");
-      servicesContainer.classList.add("nested");
+function setupUnitsFilterUI(units) {
+  const inp = document.getElementById("unitsSearch");
+  const sel = document.getElementById("unitsCityFilter");
+  const btnClear = document.getElementById("unitsClear");
 
-      unit.services.forEach((svc) => {
-        if (Array.isArray(svc.types) && svc.types.length) {
-          const svcDetails = document.createElement("details");
-          svcDetails.classList.add("service-block");
+  if (!inp || !sel || !btnClear) return;
 
-          const svcSummary = document.createElement("summary");
-          svcSummary.innerHTML = `
-            <span>${svc.name}</span>
-            <i class="bi bi-chevron-down"></i>
+  const cities = Array.from(
+    new Set(
+      (units || [])
+        .map((u) => (u.city || "").trim())
+        .filter((c) => c.length > 0)
+        .map((c) => c.toUpperCase()),
+    ),
+  ).sort((a, b) => a.localeCompare(b, "pt-BR"));
+
+  // limpa e repopula
+  sel.innerHTML = `<option value="">Todas as cidades</option>`;
+  cities.forEach((c) => {
+    const opt = document.createElement("option");
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+
+  // Eventos
+  const apply = () => {
+    const term = (inp.value || "").trim().toLowerCase();
+    const city = (sel.value || "").trim().toUpperCase();
+
+    const filtered = (allUnits || []).filter((unit) => {
+      // 1) filtro de cidade
+      if (city && (unit.city || "").trim().toUpperCase() !== city) {
+        return false;
+      }
+
+      // 2) filtro por termo (nome OU city OU serviços/tipos/especialistas)
+      if (!term) return true;
+
+      const unitName = (unit.name || "").toLowerCase();
+      const unitCity = (unit.city || "").toLowerCase();
+
+      // Busca em serviços/tipos/especialistas (se existir)
+      const servicesText = (unit.services || [])
+        .map((svc) => {
+          const svcName = svc?.name || "";
+          const typeText = (svc?.types || [])
+            .map((t) => {
+              const tName = t?.nome || "";
+              const spText = (t?.specialists || [])
+                .map((sp) => sp?.name || "")
+                .join(" ");
+              return `${tName} ${spText}`;
+            })
+            .join(" ");
+          return `${svcName} ${typeText}`;
+        })
+        .join(" ");
+
+      const haystack = `${unitName} ${unitCity} ${servicesText}`.toLowerCase();
+      return haystack.includes(term);
+    });
+
+    currentUnits = filtered;
+    renderUnitsTree(currentUnits);
+  };
+
+  // debounce leve pra não renderizar a cada tecla muito rápido
+  let t = null;
+  inp.oninput = () => {
+    clearTimeout(t);
+    t = setTimeout(apply, 120);
+  };
+
+  sel.onchange = apply;
+
+  btnClear.onclick = () => {
+    inp.value = "";
+    sel.value = "";
+    apply();
+    inp.focus();
+  };
+
+  // aplica logo pra setar contador
+  apply();
+}
+
+function renderUnitsTree(units) {
+  const container = document.getElementById("unitsContainer");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  // contador
+  const countEl = document.getElementById("unitsCount");
+  if (countEl) countEl.textContent = String(units?.length || 0);
+
+  (units || []).forEach((unit) => {
+    const unitDetails = document.createElement("details");
+    unitDetails.classList.add("unit-block");
+
+    const unitSummary = document.createElement("summary");
+    unitSummary.innerHTML = `
+      <span>${unit.name} <small class="text-muted fw-normal">(${unit.city})</small></span>
+      <i class="bi bi-chevron-down"></i>
+    `;
+    unitDetails.appendChild(unitSummary);
+
+    const servicesContainer = document.createElement("ul");
+    servicesContainer.classList.add("nested");
+
+    (unit.services || []).forEach((svc) => {
+      if (Array.isArray(svc.types) && svc.types.length) {
+        const svcDetails = document.createElement("details");
+        svcDetails.classList.add("service-block");
+
+        const svcSummary = document.createElement("summary");
+        svcSummary.innerHTML = `
+          <span>${svc.name}</span>
+          <i class="bi bi-chevron-down"></i>
+        `;
+        svcDetails.appendChild(svcSummary);
+
+        const typesUl = document.createElement("ul");
+        typesUl.classList.add("nested");
+
+        svc.types.forEach((type) => {
+          const typeDetails = document.createElement("details");
+          typeDetails.classList.add("type-block");
+
+          const typeSummary = document.createElement("summary");
+          typeSummary.innerHTML = `
+            <i class="bi bi-diagram-3-fill"></i>
+            <span>${type.nome}</span>
           `;
-          svcDetails.appendChild(svcSummary);
+          typeSummary.classList.add("d-flex", "align-items-center", "gap-2");
+          typeDetails.appendChild(typeSummary);
 
-          const typesUl = document.createElement("ul");
-          typesUl.classList.add("nested");
+          const specialistUl = document.createElement("ul");
+          specialistUl.classList.add("nested", "specialist-list");
 
-          svc.types.forEach((type) => {
-            const typeDetails = document.createElement("details");
-            typeDetails.classList.add("type-block");
+          if (Array.isArray(type.specialists) && type.specialists.length) {
+            type.specialists.forEach((sp) => {
+              const spLi = document.createElement("li");
+              spLi.classList.add("specialist-item");
 
-            const typeSummary = document.createElement("summary");
-            typeSummary.innerHTML = `
-              <i class="bi bi-diagram-3-fill"></i>
-              <span>${type.nome}</span>
-            `;
-            typeSummary.classList.add("d-flex", "align-items-center", "gap-2");
-            typeDetails.appendChild(typeSummary);
-
-            const specialistUl = document.createElement("ul");
-            specialistUl.classList.add("nested", "specialist-list");
-
-            if (Array.isArray(type.specialists) && type.specialists.length) {
-              type.specialists.forEach((sp) => {
-                const spLi = document.createElement("li");
-                spLi.classList.add("specialist-item");
-
-                spLi.innerHTML = `
-                  <i class="bi bi-person-badge-fill"></i>
-                  <span>${sp.name}</span>
-                `;
-
-                spLi.setAttribute("data-specialist", sp._key);
-
-                spLi.addEventListener("click", async (e) => {
-                  e.stopPropagation();
-
-                  // Validação de chaves
-                  if (!unit._key || !type.key || !sp._key) {
-                    alert(
-                      "Dados do serviço incompletos. Não é possível reservar."
-                    );
-                    console.error("Chave ausente:", { unit, type, sp });
-                    return;
-                  }
-
-                  const selectedServiceInfo = {
-                    unit: { _key: unit._key, name: unit.name },
-                    service: svc.name,
-                    serviceType: { _key: type.key, nome: type.nome },
-                    specialist: { _key: sp._key, name: sp.name },
-                  };
-
-                  try {
-                    console.log(
-                      "Verificando disponibilidade no backend...",
-                      unit._key,
-                      type.key,
-                      sp._key
-                    );
-
-                    const data = await fetchData(
-                      `/promiseService/${unit._key}/${type.key}/${sp._key}`,
-                      "GET"
-                    );
-
-                    console.log("Resposta do backend:", data);
-
-                    if (data.available === undefined) {
-                      alert(
-                        "Resposta do servidor inválida. Consulte o console."
-                      );
-                      console.error("Resposta inesperada:", data);
-                      return;
-                    }
-
-                    if (!data.available) {
-                      console.log("Serviço indisponível, redirecionando...");
-                      sessionStorage.setItem(
-                        "selectedServiceInfo",
-                        JSON.stringify(selectedServiceInfo)
-                      );
-                      window.open("/scheduling/reserved", "_self");
-                    } else {
-                      alert("Ainda há vagas disponíveis para este serviço.");
-                      // sendSelectedService(selectedServiceInfo); // opcional
-                    }
-                  } catch (err) {
-                    console.error("Erro ao verificar disponibilidade:", err);
-                    alert(
-                      `Erro ao verificar disponibilidade. Veja o console para detalhes.`
-                    );
-                  }
-                });
-
-                specialistUl.appendChild(spLi);
-              });
-            } else {
-              const emptyLi = document.createElement("li");
-              emptyLi.innerHTML = `
-                <i class="bi bi-person-dash-fill"></i>
-                <span class="text-muted">Reservar Vagas</span>
+              spLi.innerHTML = `
+                <i class="bi bi-person-badge-fill"></i>
+                <span>${sp.name}</span>
               `;
-              emptyLi.classList.add("specialist-item", "text-muted");
-              emptyLi.style.cursor = "pointer";
 
-              emptyLi.addEventListener("click", async (e) => {
+              spLi.setAttribute("data-specialist", sp._key);
+
+              spLi.addEventListener("click", async (e) => {
                 e.stopPropagation();
 
-                if (!unit._key || !type.key) {
+                if (!unit._key || !type.key || !sp._key) {
                   alert(
-                    "Dados do serviço incompletos. Não é possível reservar."
+                    "Dados do serviço incompletos. Não é possível reservar.",
                   );
-                  console.error("Chave ausente:", { unit, type });
+                  console.error("Chave ausente:", { unit, type, sp });
                   return;
                 }
 
                 const selectedServiceInfo = {
                   unit: { _key: unit._key, name: unit.name },
-                  service: { name: svc.name, _key: svc._key ?? svc.key },
+                  service: svc.name,
                   serviceType: { _key: type.key, nome: type.nome },
-                  specialist: null,
+                  specialist: { _key: sp._key, name: sp.name },
                 };
 
                 try {
-                  console.log(
-                    "Verificando disponibilidade no backend (vaga genérica)...",
-                    unit._key,
-                    type.key
-                  );
-
                   const data = await fetchData(
-                    `/promiseService/${unit._key}/${type.key}`,
-                    "GET"
+                    `/promiseService/${unit._key}/${type.key}/${sp._key}`,
+                    "GET",
                   );
-
-                  console.log("Resposta do backend:", data);
 
                   if (data.available === undefined) {
-                    alert("Resposta do servidor inválida. Veja o console.");
+                    alert("Resposta do servidor inválida. Consulte o console.");
                     console.error("Resposta inesperada:", data);
                     return;
                   }
 
-                  if (!data.available) {
-                    console.log(
-                      "Indisponível, redirecionando para reserved..."
-                    );
+                  if (data.available) {
+                    // ✅ TEM VAGA: segue pro agendamento interno
+                    window.selectedServiceInfo = selectedServiceInfo; // opcional (debug)
+                    await sendSelectedService(selectedServiceInfo);
+                  } else {
+                    // ❌ SEM VAGA: vai pra reservado
                     sessionStorage.setItem(
                       "selectedServiceInfo",
-                      JSON.stringify(selectedServiceInfo)
+                      JSON.stringify(selectedServiceInfo),
                     );
                     window.open("/scheduling/reserved", "_self");
-                  } else {
-                    alert("Ainda há vagas disponíveis para este serviço.");
                   }
                 } catch (err) {
                   console.error("Erro ao verificar disponibilidade:", err);
-                  alert(
-                    `Erro ao verificar disponibilidade. Veja o console para detalhes.`
-                  );
+                  alert("Erro ao verificar disponibilidade. Veja o console.");
                 }
               });
 
-              specialistUl.appendChild(emptyLi);
-            }
+              specialistUl.appendChild(spLi);
+            });
+          } else {
+            const emptyLi = document.createElement("li");
+            emptyLi.innerHTML = `
+              <i class="bi bi-person-dash-fill"></i>
+              <span class="text-muted">Reservar Vagas</span>
+            `;
+            emptyLi.classList.add("specialist-item", "text-muted");
+            emptyLi.style.cursor = "pointer";
 
-            typeDetails.appendChild(specialistUl);
-            typesUl.appendChild(typeDetails);
-          });
+            emptyLi.addEventListener("click", async (e) => {
+              e.stopPropagation();
 
-          svcDetails.appendChild(typesUl);
-          servicesContainer.appendChild(svcDetails);
-        } else {
-          const svcLi = document.createElement("li");
-          svcLi.setAttribute("data-unit", unit._key);
-          svcLi.setAttribute("data-service", svc.key);
-          svcLi.textContent = svc.name;
+              if (!unit._key || !type.key) {
+                alert("Dados do serviço incompletos. Não é possível reservar.");
+                console.error("Chave ausente:", { unit, type });
+                return;
+              }
 
-          svcLi.addEventListener("click", () => {
-            const selectedServiceInfo = {
-              unit: { _key: unit._key, name: unit.name },
-              service: { name: svc.name },
-              serviceType: null,
-            };
-            console.log("Selecionado:", selectedServiceInfo);
-            sendSelectedService(selectedServiceInfo);
-          });
+              const selectedServiceInfo = {
+                unit: { _key: unit._key, name: unit.name },
+                service: { name: svc.name, _key: svc._key ?? svc.key },
+                serviceType: { _key: type.key, nome: type.nome },
+                specialist: null,
+              };
 
-          servicesContainer.appendChild(svcLi);
-        }
-      });
+              try {
+                const data = await fetchData(
+                  `/promiseService/${unit._key}/${type.key}`,
+                  "GET",
+                );
 
-      unitDetails.appendChild(servicesContainer);
-      container.appendChild(unitDetails);
+                if (data.available === undefined) {
+                  alert("Resposta do servidor inválida. Veja o console.");
+                  console.error("Resposta inesperada:", data);
+                  return;
+                }
+
+                if (!data.available) {
+                  sessionStorage.setItem(
+                    "selectedServiceInfo",
+                    JSON.stringify(selectedServiceInfo),
+                  );
+                  window.open("/scheduling/reserved", "_self");
+                } else {
+                  alert("Ainda há vagas disponíveis para este serviço.");
+                }
+              } catch (err) {
+                console.error("Erro ao verificar disponibilidade:", err);
+                alert("Erro ao verificar disponibilidade. Veja o console.");
+              }
+            });
+
+            specialistUl.appendChild(emptyLi);
+          }
+
+          typeDetails.appendChild(specialistUl);
+          typesUl.appendChild(typeDetails);
+        });
+
+        svcDetails.appendChild(typesUl);
+        servicesContainer.appendChild(svcDetails);
+      } else {
+        const svcLi = document.createElement("li");
+        svcLi.setAttribute("data-unit", unit._key);
+        svcLi.setAttribute("data-service", svc.key);
+        svcLi.textContent = svc.name;
+
+        svcLi.addEventListener("click", () => {
+          const selectedServiceInfo = {
+            unit: { _key: unit._key, name: unit.name },
+            service: { name: svc.name },
+            serviceType: null,
+          };
+          sendSelectedService(selectedServiceInfo);
+        });
+
+        servicesContainer.appendChild(svcLi);
+      }
     });
-  } catch (err) {
-    console.error("Erro ao carregar unidades em árvore:", err);
-    alert("Não foi possível carregar a árvore de unidades.");
-  }
+
+    unitDetails.appendChild(servicesContainer);
+    container.appendChild(unitDetails);
+  });
+
+  setupDetailAnimations();
 }
 
 async function sendSelectedService(selectedServiceInfo) {
@@ -261,7 +338,7 @@ async function sendSelectedService(selectedServiceInfo) {
     const { promiseServices, inProcessDocs } = await fetchData(
       "/service/promise",
       "PUT",
-      selectedServiceInfo
+      selectedServiceInfo,
     );
     console.log("✅ Resposta do backend:", { promiseServices, inProcessDocs });
 
@@ -279,13 +356,13 @@ async function sendSelectedService(selectedServiceInfo) {
 async function renderSchedulingView(
   promiseServices,
   inProcessDocs,
-  selectedServiceInfo
+  selectedServiceInfo,
 ) {
   const gridPac = document.getElementById("gridPacientes");
 
   function getRemaining(btn) {
     return Number(
-      btn.dataset.vacancyRemaining ?? btn.dataset.vacancyLimit ?? 0
+      btn.dataset.vacancyRemaining ?? btn.dataset.vacancyLimit ?? 0,
     );
   }
 
@@ -311,7 +388,7 @@ async function renderSchedulingView(
     if (!btn) return;
     const isPast = isDatePast(btn.dataset.date);
     const remaining = Number(
-      btn.dataset.vacancyRemaining ?? btn.dataset.vacancyLimit ?? 0
+      btn.dataset.vacancyRemaining ?? btn.dataset.vacancyLimit ?? 0,
     );
     const isFull = remaining <= 0;
 
@@ -327,7 +404,7 @@ async function renderSchedulingView(
       "btn-outline-success",
       "btn-secondary",
       "full",
-      "disabled"
+      "disabled",
     );
 
     // Criar badge dinamicamente
@@ -384,8 +461,8 @@ async function renderSchedulingView(
       conduct === "emergency"
         ? "border-danger"
         : conduct === "urgency"
-        ? "border-warning"
-        : "border-success";
+          ? "border-warning"
+          : "border-success";
 
     const bgColorMap = {
       emergency: "rgba(220,53,69,0.2)",
@@ -435,11 +512,11 @@ async function renderSchedulingView(
 
     card.addEventListener(
       "mouseover",
-      () => (card.style.transform = "scale(1.02)")
+      () => (card.style.transform = "scale(1.02)"),
     );
     card.addEventListener(
       "mouseout",
-      () => (card.style.transform = "scale(1)")
+      () => (card.style.transform = "scale(1)"),
     );
 
     card.addEventListener("click", () => {
@@ -460,7 +537,7 @@ async function renderSchedulingView(
   function attachReturnHandler(cardEl, fullDate, key) {
     cardEl.querySelector(".btn-return").addEventListener("click", async () => {
       console.log(
-        `[RETURN] Iniciando retorno do paciente ${key} na data ${fullDate}`
+        `[RETURN] Iniciando retorno do paciente ${key} na data ${fullDate}`,
       );
       const r = await fetchData("/service/promise/item/return", "PUT", {
         promiseService: { _key: ps._key },
@@ -474,11 +551,11 @@ async function renderSchedulingView(
       }
 
       assignments[fullDate] = assignments[fullDate].filter(
-        (a) => a.key !== key
+        (a) => a.key !== key,
       );
       console.log(
         `[RETURN] assignments[${fullDate}] após remoção:`,
-        assignments[fullDate]
+        assignments[fullDate],
       );
       renderAgendados(fullDate);
 
@@ -494,7 +571,7 @@ async function renderSchedulingView(
         gridPac.appendChild(createPacienteCard(doc));
       }
       console.log(
-        `[RETURN] Paciente ${key} (${name}) reinserido em gridPacientes`
+        `[RETURN] Paciente ${key} (${name}) reinserido em gridPacientes`,
       );
     });
   }
@@ -505,7 +582,7 @@ async function renderSchedulingView(
 
     btn.addEventListener("click", async () => {
       console.log(
-        `[DELETE] Iniciando exclusão do paciente ${key} na data ${fullDate}`
+        `[DELETE] Iniciando exclusão do paciente ${key} na data ${fullDate}`,
       );
 
       const userPropertyRaw = get_property_from_storage("user");
@@ -530,7 +607,7 @@ async function renderSchedulingView(
       }
 
       assignments[fullDate] = (assignments[fullDate] || []).filter(
-        (a) => a.key !== key
+        (a) => a.key !== key,
       );
       renderAgendados(fullDate);
 
@@ -579,15 +656,11 @@ async function renderSchedulingView(
     });
   }
 
-  // -----------------------
-  // Inicialização UI
-  // -----------------------
-  // 1) Exibe agendamento, oculta árvore
   document.getElementById("unitsContainer").style.display = "none";
+  document.getElementById("unitsFilterCard").style.display = "none";
   const sc = document.getElementById("schedulingContainer");
   sc.style.display = "block";
 
-  // 3) limpa tudo e esconde agendados
   gridPac.innerHTML = "";
   listaDias.innerHTML = "";
   gridAg.innerHTML = "";
@@ -634,7 +707,7 @@ async function renderSchedulingView(
     }
     btn.addEventListener("click", () => {
       btns.forEach((b) =>
-        b.classList.replace("btn-primary", "btn-outline-primary")
+        b.classList.replace("btn-primary", "btn-outline-primary"),
       );
       btn.classList.replace("btn-outline-primary", "btn-primary");
       currentPeriod = btn.dataset.period;
@@ -678,7 +751,7 @@ async function renderSchedulingView(
     btn.dataset.vacancyLimit = vacancyLimit;
     btn.innerHTML = `
       <div class="fw-semibold mb-1">${new Date(
-        fullDate + "T00:00"
+        fullDate + "T00:00",
       ).toLocaleDateString("pt-BR")}</div>
     `;
 
@@ -695,7 +768,7 @@ async function renderSchedulingView(
       activeDate = fullDate;
       window.fullDate = fullDate;
       lblDate.textContent = new Date(fullDate + "T00:00").toLocaleDateString(
-        "pt-BR"
+        "pt-BR",
       );
       colAg.style.display = "block";
 
@@ -715,7 +788,7 @@ async function renderSchedulingView(
       // 7.2) Preparar array de pacientes a agendar
       const toSchedule = Array.from(selectedPatients).map((personKey) => {
         const cardEl = gridPac.querySelector(
-          `.paciente-card[data-key="${personKey}"]`
+          `.paciente-card[data-key="${personKey}"]`,
         );
         return { _key: personKey, name: cardEl?.dataset?.name || "" };
       });
@@ -756,7 +829,7 @@ async function renderSchedulingView(
       toSchedule.forEach(({ _key, name }) => {
         assignments[fullDate].push({ key: _key, name });
         const card = gridPac.querySelector(
-          `.paciente-card[data-key="${_key}"]`
+          `.paciente-card[data-key="${_key}"]`,
         );
         card?.closest(".col-12")?.remove();
       });
@@ -826,7 +899,7 @@ async function generateServicePDF() {
     const { pdfBase64 } = await fetchData(
       "/schedulingPhase/pdf",
       "PUT",
-      payload
+      payload,
     );
 
     if (!pdfBase64) {
@@ -881,7 +954,7 @@ async function generateDayPDF() {
     const { pdfBase64 } = await fetchData(
       "/schedulingPhase/day/pdf",
       "PUT",
-      payload
+      payload,
     );
 
     if (!pdfBase64) {
@@ -939,7 +1012,7 @@ async function generatePDFPatient() {
     const { pdfBase64 } = await fetchData(
       "/schedulingPhase/pdf/patient",
       "PUT",
-      payload
+      payload,
     );
 
     if (!pdfBase64) {
@@ -960,7 +1033,7 @@ async function generatePDFPatient() {
   } catch (err) {
     console.error(
       "Erro ao gerar PDF da lista de pacientes aguardando agendamento:",
-      err
+      err,
     );
   }
 }
@@ -1000,7 +1073,7 @@ async function generatePDFGeneral() {
     const { pdfBase64 } = await fetchData(
       "/schedulingPhase/pdf/general",
       "PUT",
-      payload
+      payload,
     );
 
     if (!pdfBase64) {
@@ -1058,7 +1131,7 @@ function setupDetailAnimations() {
         // — FECHAR —
         const anim = content.animate(
           [{ transform: "scaleY(1)" }, { transform: "scaleY(0)" }],
-          { duration: 400, easing: "ease" }
+          { duration: 400, easing: "ease" },
         );
         anim.onfinish = () => {
           details.open = false;
@@ -1069,7 +1142,7 @@ function setupDetailAnimations() {
         content.style.transform = "scaleY(0)";
         const anim = content.animate(
           [{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }],
-          { duration: 600, easing: "ease" }
+          { duration: 600, easing: "ease" },
         );
         anim.onfinish = () => {
           content.style.transform = "scaleY(1)";

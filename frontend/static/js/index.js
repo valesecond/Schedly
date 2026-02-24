@@ -26,22 +26,26 @@ import ReservedPlaces from "./views/ReservedPlaces.js";
 import AboutSystem from "./views/AboutSystem.js";
 import Proof from "./views/Proof.js";
 import DashboardTransportManager from "./views/DashboardTransportManager.js";
+import ListPendingTransport from "./views/ListPendingTransport.js";
+import TravelPending from "./views/TravelPending.js";
+import TravelMade from "./views/TravelMade.js";
+import TravelHistory from "./views/TravelHistory.js";
 
 const pathToRegex = (path) =>
   new RegExp(
-    "^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "([^\\/]+)") + "$"
+    "^" + path.replace(/\//g, "\\/").replace(/:\w+/g, "([^\\/]+)") + "$",
   );
 
 const getParams = (match) => {
   const values = match.result.slice(1);
   const keys = Array.from(match.route.path.matchAll(/:(\w+)/g)).map(
-    (result) => result[1]
+    (result) => result[1],
   );
 
   return Object.fromEntries(
     keys.map((key, i) => {
       return [key, values[i]];
-    })
+    }),
   );
 };
 
@@ -79,6 +83,11 @@ const router = async () => {
     { path: "/awaiting/list", view: ListAwaitingOncoming },
     { path: "/served/list", view: Served },
 
+    { path: "/transportPhase/list", view: ListPendingTransport },
+    { path: "/transportPhase/travelPending/list", view: TravelPending },
+    { path: "/transportPhase/travelHistory/list", view: TravelHistory },
+    { path: "/transportPhase/travelMade/list", view: TravelMade },
+
     { path: "/user/changePass", view: ChangePass },
     { path: "/user/aboutSystem", view: AboutSystem },
 
@@ -103,7 +112,7 @@ const router = async () => {
   });
 
   let match = potentialMatches.find(
-    (potentialMatch) => potentialMatch.result !== null
+    (potentialMatch) => potentialMatch.result !== null,
   );
 
   if (!match) {

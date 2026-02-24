@@ -69,7 +69,18 @@ export default class extends AbstractView {
                 <li class="nav-item">
                     <a class="nav-link active" href="#">Início</a>
                 </li>
-                
+                <li class="nav-item">
+                    <a class="nav-link" href="/transportPhase/list">Criar Viagem</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/transportPhase/travelPending/list">Viagens Pendentes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/transportPhase/travelMade/list">Viagens Concluídas</a>
+                </li>
+                <li class="nav-item">
+          <a class="nav-link"  href="/transportPhase/travelHistory/list">Histórico de Viagens</a>
+        </li>
                   `;
     row += super.getMenu();
     row += `</ul>`;
